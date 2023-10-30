@@ -8,6 +8,7 @@ use App\Models\User;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertDatabaseCount;
 use function Pest\Livewire\livewire;
+use function PHPUnit\Framework\callback;
 
 it('should be able to create a tweet', function () {
   $user = User::factory()->create();
@@ -26,7 +27,19 @@ it('should be able to create a tweet', function () {
     ->created_by->toBe($user->id);
 });
 
-todo(description: 'should make sure that only authenticated users can tweet');
+todo('should make sure that only authenticated users can tweet', function () {
+  livewire(name: Create::class)
+    ->set('body', 'This is my first tweet')
+    ->call(method: 'tweet')
+    ->assertForbidden();
+
+  actingAs(User::factory()->create());
+
+  livewire(name: Create::class)
+    ->set('body', 'This is my first tweet')
+    ->call(method: 'tweet')
+    ->assertEmitted(value: 'tweet::created');
+});
 
 todo(description: 'body is required');
 

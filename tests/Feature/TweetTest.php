@@ -1,6 +1,7 @@
 
 <?php
 
+use App\Http\Livewire\Timeline;
 use App\Http\Livewire\Tweet\Create;
 use App\Models\Tweet;
 use App\Models\User;
@@ -8,7 +9,6 @@ use App\Models\User;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertDatabaseCount;
 use function Pest\Livewire\livewire;
-use function PHPUnit\Framework\callback;
 
 it('should be able to create a tweet', function () {
   $user = User::factory()->create();
@@ -60,4 +60,16 @@ test('the tweet body should have a max length of 140 characters', function () {
 });
 
 
-todo(description: 'should show the tweet on the timeline');
+it('should show the tweet on the timeline', function () {
+  $user = User::factory()->create();
+
+  actingAs($user);
+
+  livewire(Create::class)
+    ->set('body', 'This is my first tweet')
+    ->call('tweet')
+    ->assertEmitted('tweet::created');
+
+  livewire(Timeline::class)
+    ->assertSee('This is my first tweet');
+});
